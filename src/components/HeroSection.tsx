@@ -42,7 +42,7 @@ const HeroSection = () => {
               Earn Money by Sharing Your Opinions
             </h1>
             <p className="text-muted-foreground text-lg mb-2">
-              Join the Attapoll survey panel
+              Join the Pinecoin Paid Surveys panel
             </p>
             <p className="text-muted-foreground text-lg mb-2">
               and earn up to Ksh 23,250 /month?

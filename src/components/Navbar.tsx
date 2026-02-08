@@ -6,7 +6,7 @@ const Navbar = () => {
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <BarChart3 className="h-6 w-6 text-primary" />
-          <span className="text-xl font-bold text-primary">Attapoll surveys</span>
+          <span className="text-xl font-bold text-primary">Pinecoin Paid Surveys</span>
         </div>
         <a href="#features" className="text-muted-foreground hover:text-foreground transition-colors text-sm">
           Features

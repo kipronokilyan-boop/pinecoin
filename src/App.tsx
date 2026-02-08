@@ -9,6 +9,7 @@ import Register from "./pages/Register";
 import Login from "./pages/Login";
 import Referral from "./pages/Referral";
 import Dashboard from "./pages/Dashboard";
+import TakeSurvey from "./pages/TakeSurvey";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/referral" element={<Referral />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/survey/:id" element={<TakeSurvey />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
