@@ -32,18 +32,18 @@ const LiveTransactionTicker = () => {
   const tx = fakeTransactions[currentIndex];
 
   return (
-    <div className="w-full flex justify-center px-4">
+    <div className="fixed top-3 right-3 z-50 flex justify-end">
       <AnimatePresence mode="wait">
         {visible && (
           <motion.div
             key={currentIndex}
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            initial={{ opacity: 0, x: 60, scale: 0.95 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            exit={{ opacity: 0, x: 60, scale: 0.95 }}
             transition={{ duration: 0.4 }}
-            className="w-full max-w-md gradient-orange-pink rounded-2xl px-5 py-3 text-center shadow-lg"
+            className="max-w-xs gradient-orange-pink rounded-2xl px-4 py-2.5 text-center shadow-lg"
           >
-            <p className="text-[hsl(192,40%,12%)] font-semibold text-sm leading-relaxed">
+            <p className="text-[hsl(192,40%,12%)] font-semibold text-xs leading-relaxed">
               {tx.phone} has withdrawn Ksh {tx.amount}.
               <br />
               New balance: Ksh {tx.balance}. Ref: {tx.ref}.
