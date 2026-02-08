@@ -14,7 +14,104 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          balance: number
+          created_at: string
+          education_level: string
+          first_name: string
+          id: string
+          last_name: string
+          loyalty_points: number
+          referral_code: string | null
+          referred_by: string | null
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          created_at?: string
+          education_level?: string
+          first_name?: string
+          id?: string
+          last_name?: string
+          loyalty_points?: number
+          referral_code?: string | null
+          referred_by?: string | null
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string
+          education_level?: string
+          first_name?: string
+          id?: string
+          last_name?: string
+          loyalty_points?: number
+          referral_code?: string | null
+          referred_by?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      survey_completions: {
+        Row: {
+          completed_at: string
+          id: string
+          survey_id: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string
+          id?: string
+          survey_id: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string
+          id?: string
+          survey_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "survey_completions_survey_id_fkey"
+            columns: ["survey_id"]
+            isOneToOne: false
+            referencedRelation: "surveys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      surveys: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          is_active: boolean
+          payout: number
+          questions: number
+          title: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          payout?: number
+          questions?: number
+          title: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          payout?: number
+          questions?: number
+          title?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
