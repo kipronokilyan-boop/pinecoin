@@ -22,7 +22,17 @@ interface Profile {
   referral_code: string;
   mpesa_phone: string | null;
   mpesa_name: string | null;
+  account_tier: string;
+  daily_survey_limit: number;
 }
+
+const tierLabels: Record<string, string> = {
+  free: "Free Account",
+  business_basic: "Business Basic",
+  business_premium: "Business Premium",
+  business_expert: "Business Expert",
+  platinum: "PLATINUM",
+};
 
 const Dashboard = () => {
   const { user, signOut, loading: authLoading } = useAuth();
@@ -144,9 +154,9 @@ const Dashboard = () => {
                 <p className="text-[hsl(192,40%,12%)]/70 text-sm">Account type:</p>
                 <div className="flex items-center gap-2">
                   <Star className="h-5 w-5 text-[hsl(192,40%,12%)]" />
-                  <span className="font-bold text-[hsl(192,40%,12%)]">Free Account</span>
+                  <span className="font-bold text-[hsl(192,40%,12%)]">{tierLabels[profile?.account_tier ?? "free"] ?? "Free Account"}</span>
                 </div>
-                <span className="inline-block mt-1 gradient-orange text-primary-foreground text-xs px-3 py-1 rounded-full font-semibold">1 surveys per day</span>
+                <span className="inline-block mt-1 gradient-orange text-primary-foreground text-xs px-3 py-1 rounded-full font-semibold">{profile?.daily_survey_limit ?? 1} surveys per day</span>
               </div>
               <Button onClick={() => navigate("/packages")} className="gradient-orange-pink text-primary-foreground rounded-full px-6 py-3 border-0 hover:opacity-90 text-base">
                 Upgrade <Star className="h-4 w-4 ml-1" />
