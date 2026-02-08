@@ -19,6 +19,7 @@ interface Profile {
   first_name: string;
   last_name: string;
   referral_code: string;
+  mpesa_phone: string | null;
 }
 
 const Dashboard = () => {
@@ -28,6 +29,9 @@ const Dashboard = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [activeTab, setActiveTab] = useState("home");
   const [completedCount, setCompletedCount] = useState(0);
+  const [showPhoneInput, setShowPhoneInput] = useState(false);
+  const [phoneInput, setPhoneInput] = useState("");
+  const [savingPhone, setSavingPhone] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/login");
@@ -47,6 +51,20 @@ const Dashboard = () => {
     };
     fetchData();
   }, [user]);
+
+  const handleSavePhone = async () => {
+    if (!user || !phoneInput.trim()) return;
+    const cleaned = phoneInput.trim();
+    if (!/^(07|01|2547|2541)\d{7,8}$/.test(cleaned)) {
+      alert("Please enter a valid M-Pesa phone number");
+      return;
+    }
+    setSavingPhone(true);
+    await supabase.from("profiles").update({ mpesa_phone: cleaned } as any).eq("user_id", user.id);
+    setProfile((p) => p ? { ...p, mpesa_phone: cleaned } : p);
+    setShowPhoneInput(false);
+    setSavingPhone(false);
+  };
 
   if (authLoading) {
     return <div className="min-h-screen bg-background flex items-center justify-center text-foreground">Loading...</div>;
@@ -152,7 +170,25 @@ const Dashboard = () => {
 
                 <div>
                   <p className="text-[hsl(192,40%,12%)]/70 text-sm">Payments details:</p>
-                  <span className="font-bold text-[hsl(192,40%,12%)]">Not Provided</span>
+                  {profile?.mpesa_phone ? (
+                    <span className="font-bold text-[hsl(192,40%,12%)]">M-Pesa: {profile.mpesa_phone}</span>
+                  ) : showPhoneInput ? (
+                    <div className="flex items-center gap-2 mt-1">
+                      <input
+                        type="tel"
+                        placeholder="e.g. 0712345678"
+                        value={phoneInput}
+                        onChange={(e) => setPhoneInput(e.target.value)}
+                        className="bg-white/80 text-[hsl(192,40%,12%)] rounded-lg px-3 py-1.5 text-sm border border-border/30 w-40"
+                        maxLength={13}
+                      />
+                      <Button onClick={handleSavePhone} disabled={savingPhone} size="sm" className="gradient-orange text-primary-foreground rounded-full border-0 text-xs px-4">
+                        {savingPhone ? "Saving..." : "Save"}
+                      </Button>
+                    </div>
+                  ) : (
+                    <span className="font-bold text-[hsl(192,40%,12%)]">Not Provided</span>
+                  )}
                 </div>
               </div>
 
@@ -170,7 +206,7 @@ const Dashboard = () => {
                 <Button onClick={() => setActiveTab("referrals")} className="gradient-orange-pink text-primary-foreground rounded-full px-6 border-0 hover:opacity-90">
                   Referrals <RefreshCw className="h-4 w-4 ml-1" />
                 </Button>
-                <Button className="gradient-orange-pink text-primary-foreground rounded-full px-6 border-0 hover:opacity-90">
+                <Button onClick={() => setShowPhoneInput(true)} className="gradient-orange-pink text-primary-foreground rounded-full px-6 border-0 hover:opacity-90">
                   Add <Plus className="h-4 w-4 ml-1" />
                 </Button>
               </div>
