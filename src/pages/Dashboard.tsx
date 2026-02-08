@@ -128,89 +128,89 @@ const Dashboard = () => {
       {activeTab === "profile" && (
         <div className="p-4 space-y-4">
           {/* Profile Card - like reference */}
-          <div className="bg-gradient-to-b from-[hsl(120,20%,90%)] to-[hsl(120,15%,85%)] rounded-2xl p-6">
-            <div className="flex items-start justify-between">
-              {/* Left: user info */}
-              <div className="flex-1 space-y-4">
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <User className="h-5 w-5 text-primary" />
-                    <h2 className="text-2xl font-bold text-primary">{profile?.first_name} {profile?.last_name}</h2>
-                  </div>
-                  <p className="text-[hsl(192,40%,12%)]/60 text-sm ml-7">{user?.email}</p>
-                </div>
+          <div className="bg-gradient-to-b from-[hsl(120,20%,90%)] to-[hsl(120,15%,85%)] rounded-2xl p-6 space-y-6">
+            {/* Name & email */}
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <User className="h-5 w-5 text-primary" />
+                <h2 className="text-2xl font-bold text-primary">{profile?.first_name} {profile?.last_name}</h2>
+              </div>
+              <p className="text-[hsl(192,40%,12%)]/60 text-sm ml-7">{user?.email}</p>
+            </div>
 
-                <div>
-                  <p className="text-[hsl(192,40%,12%)]/70 text-sm">Account type:</p>
-                  <div className="flex items-center gap-2">
-                    <Star className="h-5 w-5 text-[hsl(192,40%,12%)]" />
-                    <span className="font-bold text-[hsl(192,40%,12%)]">Free Account</span>
-                  </div>
-                  <span className="inline-block mt-1 gradient-orange text-primary-foreground text-xs px-3 py-1 rounded-full font-semibold">1 surveys per day</span>
+            {/* Account type row */}
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[hsl(192,40%,12%)]/70 text-sm">Account type:</p>
+                <div className="flex items-center gap-2">
+                  <Star className="h-5 w-5 text-[hsl(192,40%,12%)]" />
+                  <span className="font-bold text-[hsl(192,40%,12%)]">Free Account</span>
                 </div>
+                <span className="inline-block mt-1 gradient-orange text-primary-foreground text-xs px-3 py-1 rounded-full font-semibold">1 surveys per day</span>
+              </div>
+              <Button onClick={() => navigate("/packages")} className="gradient-orange-pink text-primary-foreground rounded-full px-6 py-3 border-0 hover:opacity-90 text-base">
+                Upgrade <Star className="h-4 w-4 ml-1" />
+              </Button>
+            </div>
 
-                <div>
-                  <p className="text-[hsl(192,40%,12%)]/70 text-sm">Account Balance:</p>
-                  <div className="flex items-center gap-2">
-                    <CreditCard className="h-5 w-5 text-[hsl(192,40%,12%)]" />
-                    <span className="font-bold text-[hsl(192,40%,12%)] text-lg">Ksh {profile?.balance?.toFixed(2) ?? "0.00"}</span>
-                  </div>
-                </div>
-
-                <div>
-                  <p className="text-[hsl(192,40%,12%)]/70 text-sm">Available Surveys:</p>
-                  <div className="flex items-center gap-2">
-                    <ListChecks className="h-5 w-5 text-[hsl(192,40%,12%)]" />
-                    <span className="font-bold text-[hsl(192,40%,12%)] text-lg">{availableSurveys > 0 ? availableSurveys : surveys.length}</span>
-                  </div>
-                </div>
-
-                <div>
-                  <p className="text-[hsl(192,40%,12%)]/70 text-sm">Loyalty points:</p>
-                  <div className="flex items-center gap-2">
-                    <Tag className="h-5 w-5 text-[hsl(192,40%,12%)]" />
-                    <span className="font-bold text-[hsl(192,40%,12%)] text-lg">{profile?.loyalty_points ?? 0}</span>
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex items-center gap-2">
-                    <p className="text-[hsl(192,40%,12%)]/70 text-sm">Payments details:</p>
-                    {!profile?.mpesa_phone && (
-                      <button onClick={() => setShowMpesaDialog(true)} className="gradient-orange-pink text-primary-foreground text-xs rounded-full px-3 py-0.5 font-semibold flex items-center gap-1 hover:opacity-90">
-                        Add <Plus className="h-3 w-3" />
-                      </button>
-                    )}
-                  </div>
-                  {profile?.mpesa_phone ? (
-                    <div>
-                      <span className="font-bold text-[hsl(192,40%,12%)]">{profile.mpesa_name}</span>
-                      <p className="text-[hsl(192,40%,12%)]/70 text-sm">{profile.mpesa_phone}</p>
-                    </div>
-                  ) : (
-                    <span className="font-bold text-[hsl(192,40%,12%)]">Not Provided</span>
-                  )}
+            {/* Balance row */}
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[hsl(192,40%,12%)]/70 text-sm">Account Balance:</p>
+                <div className="flex items-center gap-2">
+                  <CreditCard className="h-5 w-5 text-[hsl(192,40%,12%)]" />
+                  <span className="font-bold text-[hsl(192,40%,12%)] text-lg">Ksh {profile?.balance?.toFixed(2) ?? "0.00"}</span>
                 </div>
               </div>
+              <Button className="gradient-orange-pink text-primary-foreground rounded-full px-6 py-3 border-0 hover:opacity-90 text-base">
+                Withdraw <DollarSign className="h-4 w-4 ml-1" />
+              </Button>
+            </div>
 
-              {/* Right: action buttons */}
-              <div className="flex flex-col gap-3 ml-4">
-                <Button onClick={() => navigate("/packages")} className="gradient-orange-pink text-primary-foreground rounded-full px-6 border-0 hover:opacity-90">
-                  Upgrade <Star className="h-4 w-4 ml-1" />
-                </Button>
-                <Button className="gradient-orange-pink text-primary-foreground rounded-full px-6 border-0 hover:opacity-90">
-                  Withdraw <DollarSign className="h-4 w-4 ml-1" />
-                </Button>
-                <Button onClick={() => setActiveTab("home")} className="gradient-orange-pink text-primary-foreground rounded-full px-6 border-0 hover:opacity-90">
-                  Surveys <ListChecks className="h-4 w-4 ml-1" />
-                </Button>
-                <Button onClick={() => setActiveTab("referrals")} className="gradient-orange-pink text-primary-foreground rounded-full px-6 border-0 hover:opacity-90">
-                  Referrals <RefreshCw className="h-4 w-4 ml-1" />
-                </Button>
-                <Button onClick={() => setShowMpesaDialog(true)} className="gradient-orange-pink text-primary-foreground rounded-full px-6 border-0 hover:opacity-90">
-                  Add <Plus className="h-4 w-4 ml-1" />
-                </Button>
+            {/* Available surveys row */}
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[hsl(192,40%,12%)]/70 text-sm">Available Surveys:</p>
+                <div className="flex items-center gap-2">
+                  <ListChecks className="h-5 w-5 text-[hsl(192,40%,12%)]" />
+                  <span className="font-bold text-[hsl(192,40%,12%)] text-lg">{availableSurveys > 0 ? availableSurveys : surveys.length}</span>
+                </div>
               </div>
+              <Button onClick={() => setActiveTab("home")} className="gradient-orange-pink text-primary-foreground rounded-full px-6 py-3 border-0 hover:opacity-90 text-base">
+                Surveys <ListChecks className="h-4 w-4 ml-1" />
+              </Button>
+            </div>
+
+            {/* Loyalty points row */}
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[hsl(192,40%,12%)]/70 text-sm">Loyalty points:</p>
+                <div className="flex items-center gap-2">
+                  <Tag className="h-5 w-5 text-[hsl(192,40%,12%)]" />
+                  <span className="font-bold text-[hsl(192,40%,12%)] text-lg">{profile?.loyalty_points ?? 0}</span>
+                </div>
+              </div>
+              <Button onClick={() => setActiveTab("referrals")} className="gradient-orange-pink text-primary-foreground rounded-full px-6 py-3 border-0 hover:opacity-90 text-base">
+                Referrals <RefreshCw className="h-4 w-4 ml-1" />
+              </Button>
+            </div>
+
+            {/* Payments row */}
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[hsl(192,40%,12%)]/70 text-sm">Payments details:</p>
+                {profile?.mpesa_phone ? (
+                  <div>
+                    <span className="font-bold text-[hsl(192,40%,12%)]">{profile.mpesa_name}</span>
+                    <p className="text-[hsl(192,40%,12%)]/70 text-sm">{profile.mpesa_phone}</p>
+                  </div>
+                ) : (
+                  <span className="font-bold text-[hsl(192,40%,12%)]">Not Provided</span>
+                )}
+              </div>
+              <Button onClick={() => setShowMpesaDialog(true)} className="gradient-orange-pink text-primary-foreground rounded-full px-6 py-3 border-0 hover:opacity-90 text-base">
+                Add <Plus className="h-4 w-4 ml-1" />
+              </Button>
             </div>
           </div>
 
