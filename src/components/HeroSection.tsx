@@ -1,5 +1,6 @@
 import { ArrowDown, CheckCircle, Circle, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 const SurveyCard = () => (
   <div className="bg-foreground/95 rounded-xl overflow-hidden shadow-2xl w-64">
@@ -57,24 +58,34 @@ const HeroSection = () => {
             <ArrowDown className="h-8 w-8 text-muted-foreground mx-auto lg:mx-0 mb-6 animate-bounce" />
 
             <div className="flex flex-wrap gap-3 justify-center lg:justify-start mb-6">
-              <Button className="gradient-orange text-primary-foreground border-0 px-8 py-3 rounded-full text-base font-semibold hover:opacity-90">
-                Sign Up
-              </Button>
-              <Button className="bg-secondary text-secondary-foreground border-0 px-8 py-3 rounded-full text-base font-semibold hover:opacity-90">
-                Login
-              </Button>
+              <Link to="/register">
+                <Button className="gradient-orange text-primary-foreground border-0 px-8 py-3 rounded-full text-base font-semibold hover:opacity-90">
+                  Sign Up
+                </Button>
+              </Link>
+              <Link to="/login">
+                <Button className="bg-secondary text-secondary-foreground border-0 px-8 py-3 rounded-full text-base font-semibold hover:opacity-90">
+                  Login
+                </Button>
+              </Link>
             </div>
 
             <div className="flex flex-wrap gap-3 justify-center lg:justify-start">
-              <Button className="gradient-orange-pink text-primary-foreground border-0 px-6 py-2.5 rounded-full text-sm font-semibold hover:opacity-90">
-                Up to Ksh 6,200
-              </Button>
-              <Button className="gradient-pink text-primary-foreground border-0 px-6 py-2.5 rounded-full text-sm font-semibold hover:opacity-90">
-                Up to Ksh 23,250
-              </Button>
-              <Button className="gradient-orange-pink text-primary-foreground border-0 px-6 py-2.5 rounded-full text-sm font-semibold hover:opacity-90">
-                Ksh 23,250 and More
-              </Button>
+              <Link to="/register">
+                <Button className="gradient-orange-pink text-primary-foreground border-0 px-6 py-2.5 rounded-full text-sm font-semibold hover:opacity-90">
+                  Up to Ksh 6,200
+                </Button>
+              </Link>
+              <Link to="/register">
+                <Button className="gradient-pink text-primary-foreground border-0 px-6 py-2.5 rounded-full text-sm font-semibold hover:opacity-90">
+                  Up to Ksh 23,250
+                </Button>
+              </Link>
+              <Link to="/register">
+                <Button className="gradient-orange-pink text-primary-foreground border-0 px-6 py-2.5 rounded-full text-sm font-semibold hover:opacity-90">
+                  Ksh 23,250 and More
+                </Button>
+              </Link>
             </div>
           </div>
 
