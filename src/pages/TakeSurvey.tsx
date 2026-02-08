@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { BarChart3, DollarSign, Pencil } from "lucide-react";
+import { BarChart3, DollarSign, Pencil, ShieldAlert } from "lucide-react";
 import type { Json } from "@/integrations/supabase/types";
 
 interface Survey {
@@ -37,23 +37,38 @@ const TakeSurvey = () => {
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [timeLeft, setTimeLeft] = useState(5);
   const [submitting, setSubmitting] = useState(false);
+  const [limitReached, setLimitReached] = useState(false);
+  const [dailyLimit, setDailyLimit] = useState(1);
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/login");
   }, [user, authLoading, navigate]);
 
   useEffect(() => {
-    if (!id) return;
-    const fetch = async () => {
-      const [sRes, qRes] = await Promise.all([
+    if (!id || !user) return;
+    const fetchAll = async () => {
+      const [sRes, qRes, profileRes, completionsRes] = await Promise.all([
         supabase.from("surveys").select("*").eq("id", id).maybeSingle(),
         supabase.from("survey_questions").select("*").eq("survey_id", id).order("question_order"),
+        supabase.from("profiles").select("daily_survey_limit, account_tier").eq("user_id", user.id).maybeSingle(),
+        supabase.from("survey_completions").select("id, completed_at").eq("user_id", user.id),
       ]);
       if (sRes.data) setSurvey(sRes.data);
       if (qRes.data) setQuestions(qRes.data);
+
+      // Check daily limit
+      const limit = (profileRes.data as any)?.daily_survey_limit ?? 1;
+      setDailyLimit(limit);
+      const today = new Date().toISOString().split("T")[0];
+      const todayCount = (completionsRes.data ?? []).filter(
+        (c: any) => c.completed_at && c.completed_at.startsWith(today)
+      ).length;
+      if (todayCount >= limit) {
+        setLimitReached(true);
+      }
     };
-    fetch();
-  }, [id]);
+    fetchAll();
+  }, [id, user]);
 
   // Timer for each question
   useEffect(() => {
@@ -119,7 +134,39 @@ const TakeSurvey = () => {
         </button>
       </nav>
 
-      {stage === "intro" && (
+      {limitReached && (
+        <div className="p-4 flex flex-col items-center justify-center min-h-[70vh]">
+          <div className="bg-gradient-to-b from-[hsl(120,20%,90%)] to-[hsl(120,15%,85%)] rounded-2xl p-8 text-center max-w-md w-full">
+            <div className="gradient-orange-pink rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
+              <ShieldAlert className="h-10 w-10 text-primary-foreground" />
+            </div>
+            <h2 className="text-2xl font-bold text-primary mb-2">Daily Limit Reached</h2>
+            <p className="text-[hsl(192,40%,12%)]/70 mb-2">
+              Your <strong>Free Account</strong> allows only <strong>{dailyLimit} survey{dailyLimit > 1 ? "s" : ""} per day</strong>.
+            </p>
+            <p className="text-[hsl(192,40%,12%)]/70 mb-6">
+              Upgrade your account to unlock more surveys and earn more!
+            </p>
+            <div className="flex flex-col gap-3">
+              <Button
+                onClick={() => navigate("/packages")}
+                className="w-full h-12 rounded-full gradient-orange-pink text-primary-foreground text-base font-semibold border-0 hover:opacity-90"
+              >
+                Upgrade Account
+              </Button>
+              <Button
+                onClick={() => navigate("/dashboard")}
+                variant="outline"
+                className="w-full h-12 rounded-full border-primary/30 text-[hsl(192,40%,12%)]"
+              >
+                Back to Dashboard
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {!limitReached && stage === "intro" && (
         <div className="p-4 space-y-6">
           {/* Top info */}
           <div className="flex items-center justify-between">
@@ -167,7 +214,7 @@ const TakeSurvey = () => {
         </div>
       )}
 
-      {stage === "questions" && currentQuestion && (
+      {!limitReached && stage === "questions" && currentQuestion && (
         <div className="p-4 space-y-6">
           {/* Progress */}
           <div className="flex items-center justify-between text-sm text-muted-foreground">

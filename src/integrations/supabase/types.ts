@@ -16,8 +16,10 @@ export type Database = {
     Tables: {
       profiles: {
         Row: {
+          account_tier: string
           balance: number
           created_at: string
+          daily_survey_limit: number
           education_level: string
           first_name: string
           id: string
@@ -30,8 +32,10 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          account_tier?: string
           balance?: number
           created_at?: string
+          daily_survey_limit?: number
           education_level?: string
           first_name?: string
           id?: string
@@ -44,8 +48,10 @@ export type Database = {
           user_id: string
         }
         Update: {
+          account_tier?: string
           balance?: number
           created_at?: string
+          daily_survey_limit?: number
           education_level?: string
           first_name?: string
           id?: string
@@ -150,6 +156,39 @@ export type Database = {
           payout?: number
           questions?: number
           title?: string
+        }
+        Relationships: []
+      }
+      upgrade_requests: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          mpesa_message: string
+          package_name: string
+          status: string
+          user_id: string
+          verified_at: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          mpesa_message: string
+          package_name: string
+          status?: string
+          user_id: string
+          verified_at?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          mpesa_message?: string
+          package_name?: string
+          status?: string
+          user_id?: string
+          verified_at?: string | null
         }
         Relationships: []
       }
