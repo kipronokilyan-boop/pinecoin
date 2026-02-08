@@ -5,6 +5,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { BarChart3, User, RefreshCw, Clock, HelpCircle, Wallet, Tag, Star, DollarSign, CreditCard, ListChecks, Plus } from "lucide-react";
+import QuickStatsBar from "@/components/dashboard/QuickStatsBar";
+import LiveTransactionTicker from "@/components/dashboard/LiveTransactionTicker";
 
 interface Survey {
   id: string;
@@ -102,7 +104,18 @@ const Dashboard = () => {
       </nav>
 
       {activeTab === "home" && (
-        <div className="p-4 space-y-6">
+        <div className="p-4 space-y-4">
+          {/* Quick Stats */}
+          <QuickStatsBar
+            balance={profile?.balance ?? 0}
+            loyaltyPoints={profile?.loyalty_points ?? 0}
+            onViewProfile={() => setActiveTab("profile")}
+            onWithdraw={() => {/* TODO: withdraw */}}
+          />
+
+          {/* Live Transaction Ticker */}
+          <LiveTransactionTicker />
+
           {/* Surveys list */}
           <div className="bg-gradient-to-b from-[hsl(120,20%,90%)] to-[hsl(120,15%,85%)] rounded-2xl p-4">
             <h3 className="text-lg font-bold text-[hsl(192,40%,12%)] mb-3">Surveys For You Today</h3>
