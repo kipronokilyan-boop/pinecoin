@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { BarChart3, User, RefreshCw, Clock, HelpCircle, Wallet, Tag, Star, DollarSign, CreditCard, ListChecks, Plus } from "lucide-react";
 
 interface Survey {
@@ -20,6 +21,7 @@ interface Profile {
   last_name: string;
   referral_code: string;
   mpesa_phone: string | null;
+  mpesa_name: string | null;
 }
 
 const Dashboard = () => {
@@ -29,7 +31,8 @@ const Dashboard = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [activeTab, setActiveTab] = useState("home");
   const [completedCount, setCompletedCount] = useState(0);
-  const [showPhoneInput, setShowPhoneInput] = useState(false);
+  const [showMpesaDialog, setShowMpesaDialog] = useState(false);
+  const [mpesaNameInput, setMpesaNameInput] = useState("");
   const [phoneInput, setPhoneInput] = useState("");
   const [savingPhone, setSavingPhone] = useState(false);
 
@@ -52,17 +55,19 @@ const Dashboard = () => {
     fetchData();
   }, [user]);
 
-  const handleSavePhone = async () => {
-    if (!user || !phoneInput.trim()) return;
+  const handleSaveMpesa = async () => {
+    if (!user || !phoneInput.trim() || !mpesaNameInput.trim()) return;
     const cleaned = phoneInput.trim();
     if (!/^(07|01|2547|2541)\d{7,8}$/.test(cleaned)) {
       alert("Please enter a valid M-Pesa phone number");
       return;
     }
     setSavingPhone(true);
-    await supabase.from("profiles").update({ mpesa_phone: cleaned } as any).eq("user_id", user.id);
-    setProfile((p) => p ? { ...p, mpesa_phone: cleaned } : p);
-    setShowPhoneInput(false);
+    await supabase.from("profiles").update({ mpesa_phone: cleaned, mpesa_name: mpesaNameInput.trim() } as any).eq("user_id", user.id);
+    setProfile((p) => p ? { ...p, mpesa_phone: cleaned, mpesa_name: mpesaNameInput.trim() } : p);
+    setShowMpesaDialog(false);
+    setPhoneInput("");
+    setMpesaNameInput("");
     setSavingPhone(false);
   };
 
@@ -169,22 +174,18 @@ const Dashboard = () => {
                 </div>
 
                 <div>
-                  <p className="text-[hsl(192,40%,12%)]/70 text-sm">Payments details:</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-[hsl(192,40%,12%)]/70 text-sm">Payments details:</p>
+                    {!profile?.mpesa_phone && (
+                      <button onClick={() => setShowMpesaDialog(true)} className="gradient-orange-pink text-primary-foreground text-xs rounded-full px-3 py-0.5 font-semibold flex items-center gap-1 hover:opacity-90">
+                        Add <Plus className="h-3 w-3" />
+                      </button>
+                    )}
+                  </div>
                   {profile?.mpesa_phone ? (
-                    <span className="font-bold text-[hsl(192,40%,12%)]">M-Pesa: {profile.mpesa_phone}</span>
-                  ) : showPhoneInput ? (
-                    <div className="flex items-center gap-2 mt-1">
-                      <input
-                        type="tel"
-                        placeholder="e.g. 0712345678"
-                        value={phoneInput}
-                        onChange={(e) => setPhoneInput(e.target.value)}
-                        className="bg-white/80 text-[hsl(192,40%,12%)] rounded-lg px-3 py-1.5 text-sm border border-border/30 w-40"
-                        maxLength={13}
-                      />
-                      <Button onClick={handleSavePhone} disabled={savingPhone} size="sm" className="gradient-orange text-primary-foreground rounded-full border-0 text-xs px-4">
-                        {savingPhone ? "Saving..." : "Save"}
-                      </Button>
+                    <div>
+                      <span className="font-bold text-[hsl(192,40%,12%)]">{profile.mpesa_name}</span>
+                      <p className="text-[hsl(192,40%,12%)]/70 text-sm">{profile.mpesa_phone}</p>
                     </div>
                   ) : (
                     <span className="font-bold text-[hsl(192,40%,12%)]">Not Provided</span>
@@ -206,7 +207,7 @@ const Dashboard = () => {
                 <Button onClick={() => setActiveTab("referrals")} className="gradient-orange-pink text-primary-foreground rounded-full px-6 border-0 hover:opacity-90">
                   Referrals <RefreshCw className="h-4 w-4 ml-1" />
                 </Button>
-                <Button onClick={() => setShowPhoneInput(true)} className="gradient-orange-pink text-primary-foreground rounded-full px-6 border-0 hover:opacity-90">
+                <Button onClick={() => setShowMpesaDialog(true)} className="gradient-orange-pink text-primary-foreground rounded-full px-6 border-0 hover:opacity-90">
                   Add <Plus className="h-4 w-4 ml-1" />
                 </Button>
               </div>
@@ -243,6 +244,46 @@ const Dashboard = () => {
           </div>
         </div>
       )}
+
+      {/* M-Pesa Dialog */}
+      <Dialog open={showMpesaDialog} onOpenChange={setShowMpesaDialog}>
+        <DialogContent className="bg-gradient-to-b from-[hsl(120,20%,90%)] to-[hsl(120,15%,85%)] border-none max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-primary text-xl">Add M-Pesa Details</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <div>
+              <label className="text-[hsl(192,40%,12%)]/70 text-sm block mb-1">Full Name (as on M-Pesa)</label>
+              <input
+                type="text"
+                placeholder="e.g. John Kamau"
+                value={mpesaNameInput}
+                onChange={(e) => setMpesaNameInput(e.target.value)}
+                className="w-full bg-white/80 text-[hsl(192,40%,12%)] rounded-xl px-4 py-3 text-sm border border-border/30"
+                maxLength={100}
+              />
+            </div>
+            <div>
+              <label className="text-[hsl(192,40%,12%)]/70 text-sm block mb-1">M-Pesa Phone Number</label>
+              <input
+                type="tel"
+                placeholder="e.g. 0712345678"
+                value={phoneInput}
+                onChange={(e) => setPhoneInput(e.target.value)}
+                className="w-full bg-white/80 text-[hsl(192,40%,12%)] rounded-xl px-4 py-3 text-sm border border-border/30"
+                maxLength={13}
+              />
+            </div>
+            <Button
+              onClick={handleSaveMpesa}
+              disabled={savingPhone || !phoneInput.trim() || !mpesaNameInput.trim()}
+              className="w-full h-12 rounded-full gradient-orange-pink text-primary-foreground text-base font-semibold border-0 hover:opacity-90 disabled:opacity-50"
+            >
+              {savingPhone ? "Saving..." : "Save Payment Details"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
