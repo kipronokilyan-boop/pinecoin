@@ -41,7 +41,7 @@ const LiveTransactionTicker = () => {
             animate={{ opacity: 1, x: 0, scale: 1 }}
             exit={{ opacity: 0, x: 60, scale: 0.95 }}
             transition={{ duration: 0.4 }}
-            className="max-w-xs gradient-orange-pink rounded-2xl px-4 py-2.5 text-center shadow-lg"
+            className="w-72 sm:w-80 gradient-orange-pink rounded-2xl px-4 py-3 text-center shadow-lg"
           >
             <p className="text-[hsl(192,40%,12%)] font-semibold text-xs leading-relaxed">
               {tx.phone} has withdrawn Ksh {tx.amount}.
