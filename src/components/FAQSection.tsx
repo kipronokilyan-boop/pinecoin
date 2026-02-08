@@ -6,9 +6,9 @@ import {
 } from "@/components/ui/accordion";
 
 const faqs = [
-  { q: "Is it free to join Attapoll surveys?", a: "Yes, joining is completely free with no hidden fees." },
+  { q: "Is it free to join Pinecoin Paid Surveys?", a: "Yes, joining is completely free with no hidden fees." },
   { q: "How do I get paid?", a: "You can cash out instantly via M-Pesa, PayPal, or gift cards with no minimum threshold." },
-  { q: "Are there any hidden fees?", a: "No, Attapoll surveys has no hidden fees. You keep what you earn." },
+  { q: "Are there any hidden fees?", a: "No, Pinecoin Paid Surveys has no hidden fees. You keep what you earn." },
   { q: "How much can I earn?", a: "You can earn Ksh 500-3,000 daily, with top earners making up to Ksh 23,250 monthly through surveys and referrals." },
   { q: "Is my data safe?", a: "Yes, your data is protected with bank-level encryption and we never share your personal information." },
 ];

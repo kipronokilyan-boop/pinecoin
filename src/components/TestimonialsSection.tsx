@@ -4,7 +4,7 @@ const testimonials = [
   {
     name: "Jane from Nairobi",
     stars: 5,
-    text: "Attapoll surveys is amazing! I earn Ksh 2,000 weekly from short surveys, and M-Pesa payouts are instant!",
+    text: "Pinecoin Paid Surveys is amazing! I earn Ksh 2,000 weekly from short surveys, and M-Pesa payouts are instant!",
     img: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?ixlib=rb-4.0.3&auto=format&fit=crop&w=80&q=80",
   },
   {

@@ -58,7 +58,7 @@ const Dashboard = () => {
       <nav className="gradient-orange px-4 py-3 flex items-center gap-6">
         <div className="flex items-center gap-2">
           <BarChart3 className="h-6 w-6 text-primary-foreground" />
-          <span className="font-bold text-primary-foreground">SURVEY</span>
+          <span className="font-bold text-primary-foreground">PINECOIN</span>
         </div>
         <button onClick={() => setActiveTab("home")} className={`text-primary-foreground/80 text-sm font-semibold hover:text-primary-foreground ${activeTab === "home" ? "text-primary-foreground underline underline-offset-4" : ""}`}>HOME</button>
         <button onClick={() => setActiveTab("profile")} className={`text-primary-foreground/80 text-sm font-semibold hover:text-primary-foreground ${activeTab === "profile" ? "text-primary-foreground underline underline-offset-4" : ""}`}>PROFILE</button>
@@ -124,7 +124,7 @@ const Dashboard = () => {
                       <span className="gradient-orange text-primary-foreground text-xs px-3 py-0.5 rounded-full font-semibold">Ksh {survey.payout}</span>
                     </div>
                   </div>
-                  <Button className="gradient-orange text-primary-foreground rounded-full px-6 border-0 hover:opacity-90">
+                  <Button onClick={() => navigate(`/survey/${survey.id}`)} className="gradient-orange text-primary-foreground rounded-full px-6 border-0 hover:opacity-90">
                     Take Survey
                   </Button>
                 </div>

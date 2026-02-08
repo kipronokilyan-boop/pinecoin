@@ -46,7 +46,7 @@ const Login = () => {
     <div className="min-h-screen bg-gradient-to-b from-[hsl(120,20%,90%)] to-[hsl(120,15%,85%)] flex flex-col items-center justify-center px-4">
       <div className="mb-6 flex items-center gap-2">
         <BarChart3 className="h-8 w-8" />
-        <span className="text-xl font-bold text-background">SURVEY</span>
+        <span className="text-xl font-bold text-background">PINECOIN</span>
       </div>
 
       <h1 className="text-3xl font-bold text-primary mb-8">Login</h1>

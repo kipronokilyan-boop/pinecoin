@@ -54,7 +54,7 @@ const Referral = () => {
       <div className="bg-foreground/5 rounded-2xl p-8 w-full max-w-md border border-border/20">
         <div className="flex items-center justify-center gap-2 mb-6">
           <BarChart3 className="h-8 w-8 text-background" />
-          <span className="text-xl font-bold text-background">SURVEY</span>
+          <span className="text-xl font-bold text-background">PINECOIN</span>
         </div>
 
         <h1 className="text-3xl font-bold text-primary text-center mb-4">
