@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN mpesa_name text DEFAULT NULL;

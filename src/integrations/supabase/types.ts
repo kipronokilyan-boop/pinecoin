@@ -23,6 +23,7 @@ export type Database = {
           id: string
           last_name: string
           loyalty_points: number
+          mpesa_name: string | null
           mpesa_phone: string | null
           referral_code: string | null
           referred_by: string | null
@@ -36,6 +37,7 @@ export type Database = {
           id?: string
           last_name?: string
           loyalty_points?: number
+          mpesa_name?: string | null
           mpesa_phone?: string | null
           referral_code?: string | null
           referred_by?: string | null
@@ -49,6 +51,7 @@ export type Database = {
           id?: string
           last_name?: string
           loyalty_points?: number
+          mpesa_name?: string | null
           mpesa_phone?: string | null
           referral_code?: string | null
           referred_by?: string | null
