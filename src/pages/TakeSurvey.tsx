@@ -203,7 +203,7 @@ const TakeSurvey = () => {
 
             <Button
               onClick={handleNext}
-              disabled={!selectedAnswer && timeLeft > 0}
+              disabled={!selectedAnswer}
               className="w-full h-12 mt-6 rounded-full gradient-orange-pink text-primary-foreground text-base font-semibold border-0 hover:opacity-90 disabled:opacity-50"
             >
               {currentQ < questions.length - 1 ? "Next" : "Submit Survey"}
