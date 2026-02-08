@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { BarChart3, User, RefreshCw, Clock, HelpCircle, Wallet, Tag, Star, DollarSign, CreditCard, ListChecks, Plus } from "lucide-react";
 import QuickStatsBar from "@/components/dashboard/QuickStatsBar";
 import LiveTransactionTicker from "@/components/dashboard/LiveTransactionTicker";
+import WithdrawDialog from "@/components/dashboard/WithdrawDialog";
 
 interface Survey {
   id: string;
@@ -47,6 +48,7 @@ const Dashboard = () => {
   const [mpesaNameInput, setMpesaNameInput] = useState("");
   const [phoneInput, setPhoneInput] = useState("");
   const [savingPhone, setSavingPhone] = useState(false);
+  const [showWithdrawDialog, setShowWithdrawDialog] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/login");
@@ -110,7 +112,7 @@ const Dashboard = () => {
             balance={profile?.balance ?? 0}
             loyaltyPoints={profile?.loyalty_points ?? 0}
             onViewProfile={() => setActiveTab("profile")}
-            onWithdraw={() => {/* TODO: withdraw */}}
+            onWithdraw={() => setShowWithdrawDialog(true)}
           />
 
           {/* Live Transaction Ticker */}
@@ -185,7 +187,7 @@ const Dashboard = () => {
                   <span className="font-bold text-[hsl(192,40%,12%)] text-lg">Ksh {profile?.balance?.toFixed(2) ?? "0.00"}</span>
                 </div>
               </div>
-              <Button className="gradient-orange-pink text-primary-foreground rounded-full px-6 py-3 border-0 hover:opacity-90 text-base">
+              <Button onClick={() => setShowWithdrawDialog(true)} className="gradient-orange-pink text-primary-foreground rounded-full px-6 py-3 border-0 hover:opacity-90 text-base">
                 Withdraw <DollarSign className="h-4 w-4 ml-1" />
               </Button>
             </div>
@@ -307,6 +309,17 @@ const Dashboard = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Withdraw Dialog */}
+      <WithdrawDialog
+        open={showWithdrawDialog}
+        onOpenChange={setShowWithdrawDialog}
+        balance={profile?.balance ?? 0}
+        accountTier={profile?.account_tier ?? "free"}
+        mpesaPhone={profile?.mpesa_phone ?? null}
+        mpesaName={profile?.mpesa_name ?? null}
+        onNeedPaymentDetails={() => setShowMpesaDialog(true)}
+      />
     </div>
   );
 };
