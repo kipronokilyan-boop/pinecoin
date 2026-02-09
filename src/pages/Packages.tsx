@@ -142,7 +142,7 @@ const Packages = () => {
   useEffect(() => {
     if (!polling || !reference) return;
 
-    const interval = setInterval(checkPaymentStatus, 3000);
+    const interval = setInterval(checkPaymentStatus, 1500);
     // Stop polling after 2 minutes
     const timeout = setTimeout(() => {
       setPolling(false);
