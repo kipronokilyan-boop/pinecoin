@@ -12,7 +12,6 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Auth check
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -37,7 +36,6 @@ Deno.serve(async (req) => {
     }
 
     const userId = claimsData.claims.sub;
-
     const { phone_number, package_name, amount } = await req.json();
 
     if (!phone_number || !package_name || !amount) {
@@ -47,65 +45,64 @@ Deno.serve(async (req) => {
       );
     }
 
-    const PAYHERO_API_KEY = Deno.env.get("PAYHERO_API_KEY");
-    const PAYHERO_CHANNEL_ID = Deno.env.get("PAYHERO_CHANNEL_ID");
+    const LIPWA_API_KEY = Deno.env.get("LIPWA_API_KEY");
+    const LIPWA_CHANNEL_ID = Deno.env.get("LIPWA_CHANNEL_ID");
 
-    if (!PAYHERO_API_KEY) {
-      console.error("PAYHERO_API_KEY is not configured");
+    if (!LIPWA_API_KEY) {
+      console.error("LIPWA_API_KEY is not configured");
       return new Response(JSON.stringify({ error: "Payment service not configured" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    if (!PAYHERO_CHANNEL_ID) {
-      console.error("PAYHERO_CHANNEL_ID is not configured");
+    if (!LIPWA_CHANNEL_ID) {
+      console.error("LIPWA_CHANNEL_ID is not configured");
       return new Response(JSON.stringify({ error: "Payment channel not configured" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const externalReference = `PINECOIN-${userId}-${Date.now()}`;
+    const apiRef = `PINECOIN-${userId}-${Date.now()}`;
+    const callbackUrl = `${Deno.env.get("SUPABASE_URL")}/functions/v1/lipwa-callback`;
 
-    const callbackUrl = `${Deno.env.get("SUPABASE_URL")}/functions/v1/payhero-callback`;
+    console.log("Initiating Lipwa STK push:", { phone_number, amount, package_name, apiRef });
 
-    console.log("Initiating STK push:", { phone_number, amount, package_name, externalReference });
-
-    // Call Pay Hero STK Push API
-    const payHeroResponse = await fetch("https://backend.payhero.co.ke/api/v2/payments", {
+    const lipwaResponse = await fetch("https://pay.lipwa.app/api/payments", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Basic ${PAYHERO_API_KEY}`,
+        Authorization: `Bearer ${LIPWA_API_KEY}`,
       },
       body: JSON.stringify({
         amount: Number(amount),
         phone_number: phone_number,
-        channel_id: Number(PAYHERO_CHANNEL_ID),
-        provider: "m-pesa",
-        external_reference: externalReference,
+        channel_id: LIPWA_CHANNEL_ID,
         callback_url: callbackUrl,
+        api_ref: apiRef,
       }),
     });
 
-    const payHeroData = await payHeroResponse.json();
-    console.log("Pay Hero response:", JSON.stringify(payHeroData));
+    const lipwaData = await lipwaResponse.json();
+    console.log("Lipwa response:", JSON.stringify(lipwaData));
 
-    if (!payHeroResponse.ok) {
-      console.error("Pay Hero API error:", payHeroResponse.status, JSON.stringify(payHeroData));
+    if (!lipwaResponse.ok) {
+      console.error("Lipwa API error:", lipwaResponse.status, JSON.stringify(lipwaData));
       return new Response(
-        JSON.stringify({ error: payHeroData?.error_message || "Failed to initiate payment" }),
+        JSON.stringify({ error: lipwaData?.ResponseDescription || "Failed to initiate payment" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Store the pending upgrade request with the reference
+    // Store the pending upgrade request
+    const checkoutRequestId = lipwaData.CheckoutRequestID || apiRef;
+
     const { error: insertError } = await supabase.from("upgrade_requests").insert({
       user_id: userId,
       package_name: package_name,
       amount: Number(amount),
-      mpesa_message: externalReference,
+      mpesa_message: checkoutRequestId,
       status: "pending",
     });
 
@@ -116,7 +113,7 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        reference: externalReference,
+        reference: checkoutRequestId,
         message: "STK push sent. Please check your phone and enter your M-Pesa PIN.",
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }

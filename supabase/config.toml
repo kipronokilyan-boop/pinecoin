@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.payhero-callback]
 verify_jwt = false
+
+[functions.lipwa-callback]
+verify_jwt = false
