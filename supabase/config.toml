@@ -2,3 +2,9 @@ project_id = "fczwqzwmqtvyopshykdk"
 
 [functions.verify-mpesa-payment]
 verify_jwt = false
+
+[functions.initiate-stk-push]
+verify_jwt = false
+
+[functions.payhero-callback]
+verify_jwt = false

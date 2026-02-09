@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { BarChart3, Check, ChevronRight, Copy, Loader2 } from "lucide-react";
+import { BarChart3, Check, ChevronRight, Loader2, Phone, CheckCircle2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useAuth } from "@/hooks/useAuth";
@@ -46,54 +46,117 @@ const packages = [
   },
 ];
 
+type PaymentStep = "phone" | "processing" | "success" | "failed";
+
 const Packages = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
   const [selectedPkg, setSelectedPkg] = useState<typeof packages[0] | null>(null);
-  const [mpesaMessage, setMpesaMessage] = useState("");
-  const [verifying, setVerifying] = useState(false);
-  const [step, setStep] = useState<"instructions" | "verify">("instructions");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [step, setStep] = useState<PaymentStep>("phone");
+  const [sending, setSending] = useState(false);
+  const [reference, setReference] = useState<string | null>(null);
+  const [polling, setPolling] = useState(false);
 
   const handleStartPayment = (pkg: typeof packages[0]) => {
     setSelectedPkg(pkg);
-    setStep("instructions");
-    setMpesaMessage("");
+    setStep("phone");
+    setPhoneNumber("");
+    setReference(null);
   };
 
-  const handleVerify = async () => {
-    if (!selectedPkg || !mpesaMessage.trim() || !user) return;
-    setVerifying(true);
+  const handleCloseDialog = (open: boolean) => {
+    if (!open) {
+      setSelectedPkg(null);
+      setPolling(false);
+      setReference(null);
+    }
+  };
+
+  const handleSendSTK = async () => {
+    if (!selectedPkg || !phoneNumber.trim() || !user) return;
+
+    const cleaned = phoneNumber.trim();
+    if (!/^(07|01|2547|2541)\d{7,8}$/.test(cleaned)) {
+      toast({ title: "Invalid number", description: "Please enter a valid M-Pesa phone number", variant: "destructive" });
+      return;
+    }
+
+    setSending(true);
     try {
-      const { data, error } = await supabase.functions.invoke("verify-mpesa-payment", {
-        body: { mpesa_message: mpesaMessage.trim(), package_name: selectedPkg.name },
+      const { data, error } = await supabase.functions.invoke("initiate-stk-push", {
+        body: {
+          phone_number: cleaned,
+          package_name: selectedPkg.name,
+          amount: selectedPkg.price,
+        },
       });
 
       if (error) {
-        toast({ title: "Verification Failed", description: error.message || "Something went wrong", variant: "destructive" });
-        setVerifying(false);
+        toast({ title: "Error", description: error.message || "Failed to send payment request", variant: "destructive" });
+        setSending(false);
         return;
       }
 
       if (data?.error) {
-        toast({ title: "Verification Failed", description: data.error, variant: "destructive" });
-        setVerifying(false);
+        toast({ title: "Error", description: data.error, variant: "destructive" });
+        setSending(false);
         return;
       }
 
-      toast({ title: "🎉 Upgrade Successful!", description: data.message });
-      setSelectedPkg(null);
-      setTimeout(() => navigate("/dashboard"), 1500);
+      setReference(data.reference);
+      setStep("processing");
+      setPolling(true);
+      toast({ title: "Check your phone!", description: "Enter your M-Pesa PIN to complete payment." });
     } catch (e) {
-      toast({ title: "Error", description: "Failed to verify payment. Please try again.", variant: "destructive" });
+      toast({ title: "Error", description: "Failed to initiate payment. Please try again.", variant: "destructive" });
     }
-    setVerifying(false);
+    setSending(false);
   };
 
-  const copyTill = () => {
-    navigator.clipboard.writeText("3106479");
-    toast({ title: "Copied!", description: "Till number copied to clipboard" });
-  };
+  // Poll for payment status
+  const checkPaymentStatus = useCallback(async () => {
+    if (!reference) return;
+
+    const { data, error } = await supabase
+      .from("upgrade_requests")
+      .select("status")
+      .eq("mpesa_message", reference)
+      .maybeSingle();
+
+    if (error) {
+      console.error("Error checking payment status:", error);
+      return;
+    }
+
+    if (data?.status === "verified") {
+      setStep("success");
+      setPolling(false);
+    } else if (data?.status === "failed") {
+      setStep("failed");
+      setPolling(false);
+    }
+  }, [reference]);
+
+  useEffect(() => {
+    if (!polling || !reference) return;
+
+    const interval = setInterval(checkPaymentStatus, 3000);
+    // Stop polling after 2 minutes
+    const timeout = setTimeout(() => {
+      setPolling(false);
+      if (step === "processing") {
+        setStep("failed");
+        toast({ title: "Payment timeout", description: "We didn't receive confirmation. If you paid, it will be processed shortly.", variant: "destructive" });
+      }
+    }, 120000);
+
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    };
+  }, [polling, reference, checkPaymentStatus, step, toast]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -150,82 +213,106 @@ const Packages = () => {
       </div>
 
       {/* Payment Dialog */}
-      <Dialog open={!!selectedPkg} onOpenChange={(open) => !open && setSelectedPkg(null)}>
-        <DialogContent className="bg-gradient-to-b from-[hsl(120,20%,90%)] to-[hsl(120,15%,85%)] border-none max-w-md">
+      <Dialog open={!!selectedPkg} onOpenChange={handleCloseDialog}>
+        <DialogContent className="bg-gradient-to-b from-[hsl(120,20%,90%)] to-[hsl(120,15%,85%)] border-none max-w-[90vw] sm:max-w-md max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-primary text-xl">
-              {step === "instructions" ? "M-Pesa Payment" : "Verify Payment"}
+              {step === "phone" && "M-Pesa Payment"}
+              {step === "processing" && "Processing Payment"}
+              {step === "success" && "Payment Successful!"}
+              {step === "failed" && "Payment Failed"}
             </DialogTitle>
           </DialogHeader>
 
-          {step === "instructions" && selectedPkg && (
+          {step === "phone" && selectedPkg && (
             <div className="space-y-4 pt-2">
-              <div className="bg-white/60 rounded-xl p-4 space-y-3">
-                <p className="text-[hsl(192,40%,12%)] text-sm font-semibold">Follow these steps:</p>
-                <ol className="text-[hsl(192,40%,12%)]/80 text-sm space-y-2 list-decimal list-inside">
-                  <li>Go to M-Pesa on your phone</li>
-                  <li>Select <strong>Lipa na M-Pesa</strong></li>
-                  <li>Select <strong>Buy Goods and Services</strong></li>
-                  <li>Enter Till Number:</li>
-                </ol>
+              <div className="bg-white/60 rounded-xl p-4 space-y-2">
+                <p className="text-[hsl(192,40%,12%)] text-sm">
+                  Upgrading to <strong>{selectedPkg.name}</strong>
+                </p>
+                <p className="text-2xl font-bold text-primary">Ksh {selectedPkg.price.toLocaleString()}</p>
+                <p className="text-[hsl(192,40%,12%)]/70 text-xs">
+                  An M-Pesa payment prompt will be sent to your phone. Enter your PIN to complete.
+                </p>
+              </div>
 
-                <div className="flex items-center justify-between bg-white rounded-lg px-4 py-3">
-                  <div>
-                    <p className="text-xs text-[hsl(192,40%,12%)]/60">Till Number</p>
-                    <p className="text-2xl font-bold text-primary font-mono">3106479</p>
-                    <p className="text-xs text-[hsl(192,40%,12%)]/60">ECERTIFY INC</p>
-                  </div>
-                  <button onClick={copyTill} className="gradient-orange text-primary-foreground rounded-full p-2 hover:opacity-90">
-                    <Copy className="h-4 w-4" />
-                  </button>
+              <div>
+                <label className="text-[hsl(192,40%,12%)]/70 text-sm block mb-1">M-Pesa Phone Number</label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[hsl(192,40%,12%)]/50" />
+                  <input
+                    type="tel"
+                    placeholder="e.g. 0712345678"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    className="w-full bg-white/80 text-[hsl(192,40%,12%)] rounded-xl pl-10 pr-4 py-3 text-sm border border-border/30"
+                    maxLength={13}
+                  />
                 </div>
-
-                <ol start={5} className="text-[hsl(192,40%,12%)]/80 text-sm space-y-2 list-decimal list-inside">
-                  <li>Enter Amount: <strong>Ksh {selectedPkg.price.toLocaleString()}</strong></li>
-                  <li>Enter your M-Pesa PIN and confirm</li>
-                  <li>You will receive a confirmation SMS</li>
-                </ol>
               </div>
 
               <Button
-                onClick={() => setStep("verify")}
-                className="w-full h-12 rounded-full gradient-orange-pink text-primary-foreground text-base font-semibold border-0 hover:opacity-90"
+                onClick={handleSendSTK}
+                disabled={sending || !phoneNumber.trim()}
+                className="w-full h-12 rounded-full gradient-orange-pink text-primary-foreground text-base font-semibold border-0 hover:opacity-90 disabled:opacity-50"
               >
-                I've Made the Payment
+                {sending ? <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Sending...</> : "Pay Now"}
               </Button>
             </div>
           )}
 
-          {step === "verify" && selectedPkg && (
-            <div className="space-y-4 pt-2">
-              <p className="text-[hsl(192,40%,12%)]/80 text-sm">
-                Paste the <strong>full M-Pesa confirmation SMS</strong> you received below to verify your payment:
-              </p>
-
-              <textarea
-                placeholder="e.g. ABC12XYZ34 Confirmed. Ksh200.00 sent to ECERTIFY INC for account..."
-                value={mpesaMessage}
-                onChange={(e) => setMpesaMessage(e.target.value)}
-                className="w-full bg-white/80 text-[hsl(192,40%,12%)] rounded-xl px-4 py-3 text-sm border border-border/30 min-h-[120px] resize-none"
-                maxLength={500}
-              />
-
-              <div className="flex gap-2">
-                <Button
-                  onClick={() => setStep("instructions")}
-                  variant="outline"
-                  className="flex-1 h-12 rounded-full border-primary/30 text-[hsl(192,40%,12%)]"
-                >
-                  Back
-                </Button>
-                <Button
-                  onClick={handleVerify}
-                  disabled={verifying || !mpesaMessage.trim()}
-                  className="flex-1 h-12 rounded-full gradient-orange-pink text-primary-foreground text-base font-semibold border-0 hover:opacity-90 disabled:opacity-50"
-                >
-                  {verifying ? <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Verifying...</> : "Verify Payment"}
-                </Button>
+          {step === "processing" && (
+            <div className="space-y-4 pt-2 text-center">
+              <div className="flex justify-center">
+                <Loader2 className="h-12 w-12 animate-spin text-primary" />
               </div>
+              <p className="text-[hsl(192,40%,12%)] font-semibold">Check your phone</p>
+              <p className="text-[hsl(192,40%,12%)]/70 text-sm">
+                An M-Pesa payment prompt has been sent to your phone. Enter your PIN to complete the payment.
+              </p>
+              <p className="text-[hsl(192,40%,12%)]/50 text-xs">Waiting for confirmation...</p>
+            </div>
+          )}
+
+          {step === "success" && (
+            <div className="space-y-4 pt-2 text-center">
+              <div className="flex justify-center">
+                <CheckCircle2 className="h-16 w-16 text-primary" />
+              </div>
+              <p className="text-[hsl(192,40%,12%)] font-bold text-lg">Payment Successful!</p>
+              <p className="text-[hsl(192,40%,12%)]/70 text-sm">
+                Your account has been upgraded to <strong>{selectedPkg?.name}</strong>. Enjoy your new benefits!
+              </p>
+              <Button
+                onClick={() => {
+                  setSelectedPkg(null);
+                  navigate("/dashboard");
+                }}
+                className="w-full h-12 rounded-full gradient-orange text-primary-foreground text-base font-semibold border-0 hover:opacity-90"
+              >
+                Go to Dashboard
+              </Button>
+            </div>
+          )}
+
+          {step === "failed" && (
+            <div className="space-y-4 pt-2 text-center">
+              <div className="flex justify-center">
+                <XCircle className="h-16 w-16 text-destructive" />
+              </div>
+              <p className="text-[hsl(192,40%,12%)] font-bold text-lg">Payment Failed</p>
+              <p className="text-[hsl(192,40%,12%)]/70 text-sm">
+                The payment was not completed. Please try again.
+              </p>
+              <Button
+                onClick={() => {
+                  setStep("phone");
+                  setReference(null);
+                }}
+                className="w-full h-12 rounded-full gradient-orange-pink text-primary-foreground text-base font-semibold border-0 hover:opacity-90"
+              >
+                Try Again
+              </Button>
             </div>
           )}
         </DialogContent>
